@@ -40,6 +40,7 @@ class EquipmentService:
             raise ConflictException(
                 f"Equipment with serial number '{payload.serial_number}' already exists."
             )
+        
 
         equipment = await self._repo.create(
             serial_number=payload.serial_number,

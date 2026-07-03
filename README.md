@@ -35,7 +35,7 @@ uv run python main.py
 ```
 #open http://localhost:8000/ in browser
 
-
+uv add "pwdlib[argon2]" for encription
 DATABASE
 install docker
 

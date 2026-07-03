@@ -9,7 +9,7 @@ from app.core.exceptions import register_exception_handlers
 from app.core.schemas import StandardResponse
 from app.equipment.router import router as equipment_router
 from app.health.router import router as health_router
-
+from app.user.router import router as user_router
 
 from app.core.database import Base, engine
 
@@ -23,6 +23,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Import models here to ensure they are registered on Base
     from app.equipment.models import Equipment
     from app.health.models import HealthRecord
+    from app.user.models import User
 
     # Automatically create tables in database (not recommended for production, use Alembic)
     async with engine.begin() as conn:
@@ -51,6 +52,7 @@ def create_app() -> FastAPI:
     # (Primary keys have been changed to MongoDB-like ObjectIDs)
     app.include_router(equipment_router, prefix="/api/v1")
     app.include_router(health_router, prefix="/api/v1")
+    app.include_router(user_router, prefix="/api/v1")
 
     @app.get("/", response_model=StandardResponse[dict], tags=["App"])
     @app.get("/{id}", response_model=StandardResponse[dict], tags=["App"])

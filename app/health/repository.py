@@ -40,8 +40,8 @@ class HealthRecordRepository:
         return record
 
     async def update(self, record: HealthRecord) -> HealthRecord:
-        self.session.add(record)
-        await self.session.flush()
+        self.session.add(record) 
+        await self.session.flush() 
         return record
 
     async def delete(self, record: HealthRecord) -> None:

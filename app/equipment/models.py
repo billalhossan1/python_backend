@@ -37,6 +37,7 @@ class Equipment(Base):
         purchase_date: Optional[date],
     ) -> None:
         """Mutate this equipment's fields in-place (only provided values are changed)."""
+        
         if name is not None:
             self.name = name
         if category is not None:
