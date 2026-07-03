@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from typing import Optional
 
@@ -27,7 +28,7 @@ class HealthRecordUpdate(BaseModel):
 class HealthRecordResponse(BaseModel):
     """Response schema returned to the client."""
 
-    id: int
+    id: uuid.UUID
     patient_name: str
     diagnosis: str
     severity: str

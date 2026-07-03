@@ -1,3 +1,4 @@
+import uuid
 from fastapi import APIRouter, Depends, status
 
 from app.core.schemas import StandardResponse
@@ -24,7 +25,7 @@ async def list_equipment(
 
 @router.get("/{equipment_id}", response_model=StandardResponse[EquipmentResponse], summary="Get a single equipment")
 async def get_equipment(
-    equipment_id: int,
+    equipment_id: uuid.UUID,
     service: EquipmentService = Depends(get_equipment_service),
 ) -> StandardResponse[EquipmentResponse]:
     equipment = await service.get_by_id(equipment_id)
@@ -52,7 +53,7 @@ async def create_equipment(
 
 @router.patch("/{equipment_id}", response_model=StandardResponse[EquipmentResponse], summary="Update equipment")
 async def update_equipment(
-    equipment_id: int,
+    equipment_id: uuid.UUID,
     payload: EquipmentUpdate,
     service: EquipmentService = Depends(get_equipment_service),
 ) -> StandardResponse[EquipmentResponse]:
@@ -67,7 +68,7 @@ async def update_equipment(
 
 @router.delete("/{equipment_id}", response_model=StandardResponse[None], summary="Delete equipment")
 async def delete_equipment(
-    equipment_id: int,
+    equipment_id: uuid.UUID,
     service: EquipmentService = Depends(get_equipment_service),
 ) -> StandardResponse[None]:
     await service.delete(equipment_id)

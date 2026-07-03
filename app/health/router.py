@@ -1,3 +1,4 @@
+import uuid
 from fastapi import APIRouter, Depends, status
 
 from app.core.schemas import StandardResponse
@@ -24,7 +25,7 @@ async def list_records(
 
 @router.get("/{record_id}", response_model=StandardResponse[HealthRecordResponse], summary="Get a single health record")
 async def get_record(
-    record_id: int,
+    record_id: uuid.UUID,
     service: HealthRecordService = Depends(get_health_service),
 ) -> StandardResponse[HealthRecordResponse]:
     record = await service.get_by_id(record_id)
@@ -52,7 +53,7 @@ async def create_record(
 
 @router.patch("/{record_id}", response_model=StandardResponse[HealthRecordResponse], summary="Update a health record")
 async def update_record(
-    record_id: int,
+    record_id: uuid.UUID,
     payload: HealthRecordUpdate,
     service: HealthRecordService = Depends(get_health_service),
 ) -> StandardResponse[HealthRecordResponse]:
@@ -67,7 +68,7 @@ async def update_record(
 
 @router.delete("/{record_id}", response_model=StandardResponse[None], summary="Delete a health record")
 async def delete_record(
-    record_id: int,
+    record_id: uuid.UUID,
     service: HealthRecordService = Depends(get_health_service),
 ) -> StandardResponse[None]:
     await service.delete(record_id)

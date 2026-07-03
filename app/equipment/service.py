@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from typing import Sequence
 
 from app.core.exceptions import ConflictException, NotFoundException
@@ -24,7 +25,7 @@ class EquipmentService:
     async def get_all(self) -> Sequence[Equipment]:
         return await self._repo.get_all()
 
-    async def get_by_id(self, equipment_id: int) -> Equipment:
+    async def get_by_id(self, equipment_id: uuid.UUID) -> Equipment:
         equipment = await self._repo.get_by_id(equipment_id)
         if equipment is None:
             raise NotFoundException(resource="Equipment", identifier=equipment_id)
@@ -33,32 +34,36 @@ class EquipmentService:
     # ── Mutation operations ────────────────────────────────────────────────────
 
     async def create(self, payload: EquipmentCreate) -> Equipment:
-        # Business rule: no duplicate serial numbers
-        existing = await self._repo.get_all()
-        if any(e.serial_number == payload.serial_number for e in existing):
+        # Check if equipment with the same serial_number already exists
+        existing = await self._repo.get_by_serial_number(payload.serial_number)
+        if existing is not None:
             raise ConflictException(
                 f"Equipment with serial number '{payload.serial_number}' already exists."
             )
 
-        return await self._repo.create(
-            name=payload.name,
+        equipment = await self._repo.create(
             serial_number=payload.serial_number,
+            name=payload.name,
             category=payload.category,
             status=payload.status,
             purchase_date=payload.purchase_date,
         )
+        await self._repo.session.commit()
+        return equipment
 
-    async def update(self, equipment_id: int, payload: EquipmentUpdate) -> Equipment:
+    async def update(self, equipment_id: uuid.UUID, payload: EquipmentUpdate) -> Equipment:
         equipment = await self.get_by_id(equipment_id)
         equipment.apply_update(
             name=payload.name,
-            serial_number=payload.serial_number,
             category=payload.category,
             status=payload.status,
             purchase_date=payload.purchase_date,
         )
-        return await self._repo.update(equipment)
+        updated = await self._repo.update(equipment)
+        await self._repo.session.commit()
+        return updated
 
-    async def delete(self, equipment_id: int) -> None:
+    async def delete(self, equipment_id: uuid.UUID) -> None:
         equipment = await self.get_by_id(equipment_id)
         await self._repo.delete(equipment)
+        await self._repo.session.commit()

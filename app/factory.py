@@ -48,6 +48,7 @@ def create_app() -> FastAPI:
     register_exception_handlers(app)
 
     # Mount feature routers
+    # (Primary keys have been changed to MongoDB-like ObjectIDs)
     app.include_router(equipment_router, prefix="/api/v1")
     app.include_router(health_router, prefix="/api/v1")
 

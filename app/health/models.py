@@ -1,20 +1,26 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import DateTime, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 
 
 class HealthRecord(Base):
-    """SQLAlchemy model for health records."""
+    """SQLAlchemy model for health records using UUIDs."""
 
     __tablename__ = "health_records"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
     patient_name: Mapped[str] = mapped_column(String(100), nullable=False)
     diagnosis: Mapped[str] = mapped_column(String(500), nullable=False)
     severity: Mapped[str] = mapped_column(String(50), default="low", server_default="low")

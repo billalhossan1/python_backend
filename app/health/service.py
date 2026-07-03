@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from typing import Sequence
 
 from app.core.exceptions import NotFoundException
@@ -24,7 +25,7 @@ class HealthRecordService:
     async def get_all(self) -> Sequence[HealthRecord]:
         return await self._repo.get_all()
 
-    async def get_by_id(self, record_id: int) -> HealthRecord:
+    async def get_by_id(self, record_id: uuid.UUID) -> HealthRecord:
         record = await self._repo.get_by_id(record_id)
         if record is None:
             raise NotFoundException(resource="HealthRecord", identifier=record_id)
@@ -33,14 +34,16 @@ class HealthRecordService:
     # ── Mutation operations ────────────────────────────────────────────────────
 
     async def create(self, payload: HealthRecordCreate) -> HealthRecord:
-        return await self._repo.create(
+        record = await self._repo.create(
             patient_name=payload.patient_name,
             diagnosis=payload.diagnosis,
             severity=payload.severity,
             notes=payload.notes,
         )
+        await self._repo.session.commit()
+        return record
 
-    async def update(self, record_id: int, payload: HealthRecordUpdate) -> HealthRecord:
+    async def update(self, record_id: uuid.UUID, payload: HealthRecordUpdate) -> HealthRecord:
         record = await self.get_by_id(record_id)
         record.apply_update(
             patient_name=payload.patient_name,
@@ -48,8 +51,11 @@ class HealthRecordService:
             severity=payload.severity,
             notes=payload.notes,
         )
-        return await self._repo.update(record)
+        updated = await self._repo.update(record)
+        await self._repo.session.commit()
+        return updated
 
-    async def delete(self, record_id: int) -> None:
+    async def delete(self, record_id: uuid.UUID) -> None:
         record = await self.get_by_id(record_id)
         await self._repo.delete(record)
+        await self._repo.session.commit()

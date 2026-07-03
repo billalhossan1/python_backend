@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from typing import Optional, Sequence
 
 from sqlalchemy import select
@@ -9,7 +10,7 @@ from app.health.models import HealthRecord
 
 
 class HealthRecordRepository:
-    """SQLAlchemy implementation of the HealthRecord repository."""
+    """SQLAlchemy implementation of the HealthRecord repository using UUIDs."""
 
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
@@ -18,7 +19,7 @@ class HealthRecordRepository:
         result = await self.session.execute(select(HealthRecord))
         return result.scalars().all()
 
-    async def get_by_id(self, record_id: int) -> Optional[HealthRecord]:
+    async def get_by_id(self, record_id: uuid.UUID) -> Optional[HealthRecord]:
         return await self.session.get(HealthRecord, record_id)
 
     async def create(
@@ -35,7 +36,7 @@ class HealthRecordRepository:
             notes=notes,
         )
         self.session.add(record)
-        await self.session.flush()  # Populates ID
+        await self.session.flush()  # Generates the UUID
         return record
 
     async def update(self, record: HealthRecord) -> HealthRecord:
