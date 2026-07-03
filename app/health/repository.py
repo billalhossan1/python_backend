@@ -1,59 +1,48 @@
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Optional
+from typing import Optional, Sequence
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.health.models import HealthRecord
 
 
 class HealthRecordRepository:
-    """
-    In-memory storage for HealthRecord domain objects.
+    """SQLAlchemy implementation of the HealthRecord repository."""
 
-    Replace the `_store` dict with actual DB calls (SQLAlchemy, motor, etc.)
-    without touching any layer above this one.
-    """
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
 
-    def __init__(self) -> None:
-        self._store: dict[int, HealthRecord] = {}
-        self._counter: int = 0
+    async def get_all(self) -> Sequence[HealthRecord]:
+        result = await self.session.execute(select(HealthRecord))
+        return result.scalars().all()
 
-    def _next_id(self) -> int:
-        self._counter += 1
-        return self._counter
+    async def get_by_id(self, record_id: int) -> Optional[HealthRecord]:
+        return await self.session.get(HealthRecord, record_id)
 
-    def get_all(self) -> list[HealthRecord]:
-        return list(self._store.values())
-
-    def get_by_id(self, record_id: int) -> Optional[HealthRecord]:
-        return self._store.get(record_id)
-
-    def create(
+    async def create(
         self,
         patient_name: str,
         diagnosis: str,
         severity: str,
         notes: str,
     ) -> HealthRecord:
-        new_id = self._next_id()
         record = HealthRecord(
-            id=new_id,
             patient_name=patient_name,
             diagnosis=diagnosis,
             severity=severity,
             notes=notes,
-            recorded_at=datetime.now(),
         )
-        self._store[new_id] = record
+        self.session.add(record)
+        await self.session.flush()  # Populates ID
         return record
 
-    def update(self, record: HealthRecord) -> HealthRecord:
-        """Persist an already-mutated HealthRecord back to the store."""
-        self._store[record.id] = record
+    async def update(self, record: HealthRecord) -> HealthRecord:
+        self.session.add(record)
+        await self.session.flush()
         return record
 
-    def delete(self, record_id: int) -> bool:
-        if record_id in self._store:
-            del self._store[record_id]
-            return True
-        return False
+    async def delete(self, record: HealthRecord) -> None:
+        await self.session.delete(record)
+        await self.session.flush()

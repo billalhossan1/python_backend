@@ -1,25 +1,25 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+from sqlalchemy import DateTime, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
 
-@dataclass
-class HealthRecord:
-    """
-    Domain model for a Health Record.
+from app.core.database import Base
 
-    This is a plain Python dataclass — no ORM, no HTTP concern.
-    Swap this out with an SQLAlchemy model when you add a database.
-    """
 
-    id: int
-    patient_name: str
-    diagnosis: str
-    severity: str = "low"  # low, medium, high, critical
-    notes: str = ""
-    recorded_at: Optional[datetime] = None
+class HealthRecord(Base):
+    """SQLAlchemy model for health records."""
+
+    __tablename__ = "health_records"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    patient_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    diagnosis: Mapped[str] = mapped_column(String(500), nullable=False)
+    severity: Mapped[str] = mapped_column(String(50), default="low", server_default="low")
+    notes: Mapped[str] = mapped_column(Text, default="", server_default="")
+    recorded_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     def apply_update(
         self,
@@ -28,6 +28,7 @@ class HealthRecord:
         severity: Optional[str],
         notes: Optional[str],
     ) -> None:
+        """Mutate this record's fields in-place (only provided values are changed)."""
         if patient_name is not None:
             self.patient_name = patient_name
         if diagnosis is not None:

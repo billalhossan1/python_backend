@@ -9,10 +9,10 @@ router = APIRouter(prefix="/equipment", tags=["Equipment"])
 
 
 @router.get("/", response_model=StandardResponse[list[EquipmentResponse]], summary="List all equipment")
-def list_equipment(
+async def list_equipment(
     service: EquipmentService = Depends(get_equipment_service),
 ) -> StandardResponse[list[EquipmentResponse]]:
-    items = service.get_all()
+    items = await service.get_all()
     items_data = [EquipmentResponse.model_validate(e.__dict__) for e in items]
     return StandardResponse(
         success=True,
@@ -23,11 +23,11 @@ def list_equipment(
 
 
 @router.get("/{equipment_id}", response_model=StandardResponse[EquipmentResponse], summary="Get a single equipment")
-def get_equipment(
+async def get_equipment(
     equipment_id: int,
     service: EquipmentService = Depends(get_equipment_service),
 ) -> StandardResponse[EquipmentResponse]:
-    equipment = service.get_by_id(equipment_id)
+    equipment = await service.get_by_id(equipment_id)
     equipment_data = EquipmentResponse.model_validate(equipment.__dict__)
     return StandardResponse(
         success=True,
@@ -37,11 +37,11 @@ def get_equipment(
 
 
 @router.post("/", response_model=StandardResponse[EquipmentResponse], status_code=status.HTTP_201_CREATED, summary="Create equipment")
-def create_equipment(
+async def create_equipment(
     payload: EquipmentCreate,
     service: EquipmentService = Depends(get_equipment_service),
 ) -> StandardResponse[EquipmentResponse]:
-    equipment = service.create(payload)
+    equipment = await service.create(payload)
     equipment_data = EquipmentResponse.model_validate(equipment.__dict__)
     return StandardResponse(
         success=True,
@@ -51,12 +51,12 @@ def create_equipment(
 
 
 @router.patch("/{equipment_id}", response_model=StandardResponse[EquipmentResponse], summary="Update equipment")
-def update_equipment(
+async def update_equipment(
     equipment_id: int,
     payload: EquipmentUpdate,
     service: EquipmentService = Depends(get_equipment_service),
 ) -> StandardResponse[EquipmentResponse]:
-    equipment = service.update(equipment_id, payload)
+    equipment = await service.update(equipment_id, payload)
     equipment_data = EquipmentResponse.model_validate(equipment.__dict__)
     return StandardResponse(
         success=True,
@@ -66,11 +66,11 @@ def update_equipment(
 
 
 @router.delete("/{equipment_id}", response_model=StandardResponse[None], summary="Delete equipment")
-def delete_equipment(
+async def delete_equipment(
     equipment_id: int,
     service: EquipmentService = Depends(get_equipment_service),
 ) -> StandardResponse[None]:
-    service.delete(equipment_id)
+    await service.delete(equipment_id)
     return StandardResponse(
         success=True,
         message="Equipment deleted successfully",

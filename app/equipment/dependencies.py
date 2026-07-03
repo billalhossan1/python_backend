@@ -1,17 +1,14 @@
-from __future__ import annotations
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from functools import lru_cache
-
+from app.core.database import get_db_session
 from app.equipment.repository import EquipmentRepository
 from app.equipment.service import EquipmentService
 
 
-@lru_cache(maxsize=1)
-def _get_equipment_repository() -> EquipmentRepository:
-    """Returns a single shared EquipmentRepository instance (application lifetime)."""
-    return EquipmentRepository()
-
-
-def get_equipment_service() -> EquipmentService:
-    """FastAPI dependency that provides a fully wired EquipmentService."""
-    return EquipmentService(repository=_get_equipment_repository())
+def get_equipment_service(
+    session: AsyncSession = Depends(get_db_session),
+) -> EquipmentService:
+    """FastAPI dependency that provides a fully wired EquipmentService instance per request."""
+    repository = EquipmentRepository(session=session)
+    return EquipmentService(repository=repository)

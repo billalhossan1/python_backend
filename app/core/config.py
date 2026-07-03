@@ -1,7 +1,6 @@
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-
 class Settings(BaseSettings):
     """Application settings loaded from environment variables or .env file."""
 
@@ -10,6 +9,10 @@ class Settings(BaseSettings):
     debug: bool = Field(default=False, description="Enable debug mode")
     host: str = Field(default="127.0.0.1", description="Server host")
     port: int = Field(default=8000, description="Server port")
+    database_url: str = Field(
+        default="postgresql+asyncpg://postgres:postgres@localhost:5432/fastapi_db",
+        description="PostgreSQL Connection URL (asyncpg)",
+    )
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

@@ -11,11 +11,23 @@ from app.equipment.router import router as equipment_router
 from app.health.router import router as health_router
 
 
+from app.core.database import Base, engine
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan: runs setup before startup and teardown on shutdown."""
     # ── startup ──────────────────────────────────────────────
     print(f"🚀  {settings.app_name} v{settings.app_version} starting up...")
+    
+    # Import models here to ensure they are registered on Base
+    from app.equipment.models import Equipment
+    from app.health.models import HealthRecord
+
+    # Automatically create tables in database (not recommended for production, use Alembic)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        
     yield
     # ── shutdown ─────────────────────────────────────────────
     print("👋  Shutting down...")
