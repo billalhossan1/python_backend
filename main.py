@@ -1,11 +1,23 @@
- 
+from fastapi import datastructures
 import uvicorn
-from fastapi import FastAPI
-app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World 1"}
+from app.factory import create_app
+from app.core.config import settings
+from app.equipment.models import Equipment
+
+app = create_app()
+print(f"Equipment doc: {Equipment.__doc__}")
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=3000, reload=True)
+    uvicorn.run(
+        "main:app",
+        host=settings.host,
+        port=settings.port,
+        reload=settings.debug,
+    )
+
+
+
+
+for n in range(5 , 10):
+    print(f" itertae ${n}")
